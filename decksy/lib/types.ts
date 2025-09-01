@@ -3,6 +3,7 @@ export interface FlashcardSet {
   title: string
   description?: string
   tags: string[]
+  created_by?: string
   created_at: string
   updated_at: string
   flashcards?: Flashcard[]
