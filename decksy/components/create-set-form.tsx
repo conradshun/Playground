@@ -91,23 +91,16 @@ export function CreateSetForm() {
 
     try {
       console.log("[v0] Supabase client created:", !!supabase)
-      console.log("[v0] Attempting to insert flashcard set:", {
+
+      const insertData = {
         title: title.trim(),
         description: description.trim() || null,
-        created_by: createdBy.trim() || null,
         tags,
-      })
+      }
 
-      const { data, error } = await supabase
-        .from("flashcard_sets")
-        .insert({
-          title: title.trim(),
-          description: description.trim() || null,
-          created_by: createdBy.trim() || null,
-          tags,
-        })
-        .select()
-        .single()
+      console.log("[v0] Attempting to insert flashcard set:", insertData)
+
+      const { data, error } = await supabase.from("flashcard_sets").insert(insertData).select().single()
 
       console.log("[v0] Insert result:", { data, error })
 
