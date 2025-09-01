@@ -32,7 +32,7 @@ export default async function HomePage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 text-balance">Welcome to Decksy</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4 text-balance">Welcome to rustycards</h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 text-pretty">
             Create, share, and study flashcards together as a community
           </p>

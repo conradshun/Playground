@@ -124,27 +124,72 @@ export default function AdminPage() {
 
   const deleteFlashcardSet = async (setId: string) => {
     try {
-      // Delete flashcards first
-      const { error: flashcardsError } = await supabase.from("flashcards").delete().eq("flashcard_set_id", setId)
+      console.log("[v0] Starting delete operation for set:", setId)
+      console.log("[v0] Supabase client:", !!supabase)
 
-      if (flashcardsError) throw flashcardsError
+      if (!supabase) {
+        throw new Error("Supabase client not initialized")
+      }
+
+      // Delete flashcards first
+      console.log("[v0] Deleting flashcards for set:", setId)
+      const { data: deletedFlashcards, error: flashcardsError } = await supabase
+        .from("flashcards")
+        .delete()
+        .eq("flashcard_set_id", setId)
+        .select()
+
+      if (flashcardsError) {
+        console.error("[v0] Flashcards delete error details:", {
+          message: flashcardsError.message,
+          details: flashcardsError.details,
+          hint: flashcardsError.hint,
+          code: flashcardsError.code,
+        })
+        throw new Error(`Failed to delete flashcards: ${flashcardsError.message}`)
+      }
+
+      console.log("[v0] Flashcards deleted successfully:", deletedFlashcards?.length || 0)
 
       // Delete the set
-      const { error: setError } = await supabase.from("flashcard_sets").delete().eq("id", setId)
+      console.log("[v0] Deleting flashcard set:", setId)
+      const { data: deletedSet, error: setError } = await supabase
+        .from("flashcard_sets")
+        .delete()
+        .eq("id", setId)
+        .select()
 
-      if (setError) throw setError
+      if (setError) {
+        console.error("[v0] Set delete error details:", {
+          message: setError.message,
+          details: setError.details,
+          hint: setError.hint,
+          code: setError.code,
+        })
+        throw new Error(`Failed to delete flashcard set: ${setError.message}`)
+      }
+
+      console.log("[v0] Flashcard set deleted successfully:", deletedSet)
 
       toast({
         title: "Success",
         description: "Flashcard set deleted successfully",
       })
 
-      loadAdminData() // Reload data
+      setFlashcardSets((prev) => prev.filter((set) => set.id !== setId))
+
+      // Update stats
+      setStats((prev) => ({
+        ...prev,
+        totalSets: prev.totalSets - 1,
+        totalFlashcards: prev.totalFlashcards - (deletedFlashcards?.length || 0),
+      }))
     } catch (error) {
-      console.error("Error deleting set:", error)
+      console.error("[v0] Delete operation failed:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
       toast({
         title: "Error",
-        description: "Failed to delete flashcard set",
+        description: `Failed to delete flashcard set: ${errorMessage}`,
         variant: "destructive",
       })
     }
@@ -152,21 +197,49 @@ export default function AdminPage() {
 
   const deleteFlashcard = async (flashcardId: string) => {
     try {
-      const { error } = await supabase.from("flashcards").delete().eq("id", flashcardId)
+      console.log("[v0] Starting delete operation for flashcard:", flashcardId)
+      console.log("[v0] Supabase client:", !!supabase)
 
-      if (error) throw error
+      if (!supabase) {
+        throw new Error("Supabase client not initialized")
+      }
+
+      const { data: deletedCard, error } = await supabase.from("flashcards").delete().eq("id", flashcardId).select()
+
+      if (error) {
+        console.error("[v0] Flashcard delete error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        })
+        throw new Error(`Failed to delete flashcard: ${error.message}`)
+      }
+
+      console.log("[v0] Flashcard deleted successfully:", deletedCard)
 
       toast({
         title: "Success",
         description: "Flashcard deleted successfully",
       })
 
-      loadAdminData() // Reload data
+      setFlashcardSets((prev) =>
+        prev.map((set) => ({
+          ...set,
+          flashcards: set.flashcards?.filter((card) => card.id !== flashcardId) || [],
+        })),
+      )
+
+      setStats((prev) => ({
+        ...prev,
+        totalFlashcards: prev.totalFlashcards - 1,
+      }))
     } catch (error) {
-      console.error("Error deleting flashcard:", error)
+      console.error("[v0] Delete flashcard operation failed:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
       toast({
         title: "Error",
-        description: "Failed to delete flashcard",
+        description: `Failed to delete flashcard: ${errorMessage}`,
         variant: "destructive",
       })
     }
@@ -300,7 +373,12 @@ export default function AdminPage() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteFlashcardSet(set.id)}>Delete</AlertDialogAction>
+                            <AlertDialogAction
+                              onClick={() => deleteFlashcardSet(set.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete Set
+                            </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
@@ -345,7 +423,12 @@ export default function AdminPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => deleteFlashcard(card.id)}>Delete</AlertDialogAction>
+                                  <AlertDialogAction
+                                    onClick={() => deleteFlashcard(card.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete Card
+                                  </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
