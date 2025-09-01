@@ -184,12 +184,13 @@ export function StudyInterface({ flashcardSet, initialMode }: StudyInterfaceProp
 
         {/* Flashcard */}
         <div className="mb-8">
-          <Card className="min-h-[400px] cursor-pointer" onClick={session.mode === "flip" ? flipCard : undefined}>
+          <Card className="min-h-[400px] cursor-pointer transition-all duration-300 hover:shadow-lg" onClick={flipCard}>
             <CardContent className="flex flex-col justify-center items-center p-8 min-h-[400px]">
               {!session.isFlipped ? (
                 <div className="text-center w-full">
-                  <div className="text-sm text-muted-foreground mb-4">
-                    {session.mode === "flip" ? "Front (click to flip)" : "Question"}
+                  <div className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-2">
+                    <span>Front</span>
+                    <span className="text-xs bg-muted px-2 py-1 rounded">Click to flip</span>
                   </div>
                   <div className="text-xl mb-6 text-pretty">{currentCard.front_text}</div>
                   {currentCard.front_image_url && (
@@ -202,8 +203,9 @@ export function StudyInterface({ flashcardSet, initialMode }: StudyInterfaceProp
                 </div>
               ) : (
                 <div className="text-center w-full">
-                  <div className="text-sm text-muted-foreground mb-4">
-                    {session.mode === "flip" ? "Back (click to flip)" : "Answer"}
+                  <div className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-2">
+                    <span>Back</span>
+                    <span className="text-xs bg-muted px-2 py-1 rounded">Click to flip</span>
                   </div>
                   <div className="text-xl mb-6 text-pretty">{currentCard.back_text}</div>
                   {currentCard.back_image_url && (
@@ -228,10 +230,6 @@ export function StudyInterface({ flashcardSet, initialMode }: StudyInterfaceProp
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Previous
               </Button>
-              <Button onClick={flipCard}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                {session.isFlipped ? "Show Front" : "Show Back"}
-              </Button>
               <Button onClick={nextCard} disabled={session.currentIndex === session.totalCards - 1}>
                 Next
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -240,14 +238,7 @@ export function StudyInterface({ flashcardSet, initialMode }: StudyInterfaceProp
           ) : (
             // Quiz Mode Controls
             <div className="flex flex-col gap-4">
-              {!session.isFlipped ? (
-                <div className="flex justify-center">
-                  <Button onClick={flipCard}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Show Answer
-                  </Button>
-                </div>
-              ) : (
+              {session.isFlipped && (
                 <div className="flex justify-center gap-4">
                   <Button
                     variant="outline"

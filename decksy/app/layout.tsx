@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
+import { Footer } from "@/components/footer"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -20,9 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} flex flex-col min-h-screen`}>
         <Suspense fallback={null}>
-          {children}
+          <main className="flex-1">{children}</main>
+          <Footer />
           <Toaster />
         </Suspense>
         <Analytics />

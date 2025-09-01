@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Plus, BookOpen, Users } from "lucide-react"
 import Link from "next/link"
+import { UserSessionTracker } from "@/components/user-session-tracker"
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -20,8 +21,14 @@ export default async function HomePage() {
 
   const sets = (recentSets as (FlashcardSet & { flashcards: { count: number }[] })[]) || []
 
+  const { data: userSessions } = await supabase.from("user_sessions").select("session_id")
+
+  const uniqueStudents = userSessions ? new Set(userSessions.map((session) => session.session_id)).size : 0
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <UserSessionTracker />
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -69,12 +76,12 @@ export default async function HomePage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Community</CardTitle>
+              <CardTitle className="text-sm font-medium">Students Using App</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">10-15</div>
-              <p className="text-xs text-muted-foreground">Active students</p>
+              <div className="text-2xl font-bold">{uniqueStudents}</div>
+              <p className="text-xs text-muted-foreground">Unique students tracked</p>
             </CardContent>
           </Card>
         </div>
